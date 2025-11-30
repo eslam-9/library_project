@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:library_project/feature/authentication/view/login.dart';
 import 'package:library_project/feature/onboarding/model/onboarding_model.dart';
 import 'package:library_project/feature/onboarding/view/onboarding_widget.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
   static const String routeName = '/onboarding';
 
   @override
@@ -20,19 +21,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingModel(
       title: "Find Your Book",
       description:
-          "Find your next read from a wide collection of\nnovels, textbooks, and more.",
+          "Find your next read from a wide collection of\n       novels, textbooks, and more.",
       image: "assets/images/onboarding1.png",
     ),
     OnboardingModel(
       title: "Save Your Favorites",
       description:
-          "Bookmark books, create reading lists, and keep\neverything organized in one place.",
+          "Bookmark books, create reading lists, and keep\n         everything organized in one place.",
       image: "assets/images/onboarding2.png",
     ),
     OnboardingModel(
       title: "Read Anytime",
       description:
-          "Access your library instantly on any device and\nenjoy a smooth reading experience.",
+          "Access your library instantly on any device and\n         enjoy a smooth reading experience.",
       image: "assets/images/onboarding3.png",
     ),
   ];
@@ -55,8 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _handleNextButton() {
     if (_controller.page == pages.length - 1) {
-      // Navigate to next screen (e.g., login or home)
-      // Navigator.pushReplacementNamed(context, '/home');
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
     } else {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),

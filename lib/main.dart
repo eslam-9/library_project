@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/core/theming.dart';
 import 'package:library_project/feature/onboarding/view/onboardingScreen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: "https://ujbjmvvcmdaayraixqji.supabase.co",
+    anonKey:
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqYmptdnZjbWRhYXlyYWl4cWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MDI0OTUsImV4cCI6MjA4MDA3ODQ5NX0.8YSs6J155KD3JymePwxvig3WQlxsR-__uQb_caNLTDc",
+  );
   runApp(const MainApp());
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({Key? key}) : super(key: key);
+  const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +27,13 @@ class MainApp extends StatelessWidget {
       splitScreenMode: true,
       // Use builder only if you need to use library outside ScreenUtilInit context
       builder: (_, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Library app',
-          theme: AppTheme.lightTheme,
-          home: const OnboardingScreen(),
+        return ProviderScope(
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Library app',
+            theme: AppTheme.lightTheme,
+            home: const OnboardingScreen(),
+          ),
         );
       },
     );
