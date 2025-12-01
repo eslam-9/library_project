@@ -4,13 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/core/theming.dart';
 import 'package:library_project/core/root_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Supabase.initialize(
-    url: "https://ujbjmvvcmdaayraixqji.supabase.co",
-    anonKey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqYmptdnZjbWRhYXlyYWl4cWppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MDI0OTUsImV4cCI6MjA4MDA3ODQ5NX0.8YSs6J155KD3JymePwxvig3WQlxsR-__uQb_caNLTDc",
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
   runApp(const MainApp());
 }
