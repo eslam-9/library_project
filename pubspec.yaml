@@ -13,6 +13,7 @@ dependencies:
   smooth_page_indicator: ^1.1.0  
   flutter_screenutil: ^5.9.3
   supabase_flutter: ^2.10.3
+  flutter_dotenv: ^6.0.0
 
 
 
@@ -27,3 +28,4 @@ flutter:
 
   assets:
     - assets/images/
+    - .env
