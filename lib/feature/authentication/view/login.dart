@@ -45,12 +45,11 @@ class _LoginState extends ConsumerState<Login> {
           SnackBar(content: Text(next.error), backgroundColor: Colors.red),
         );
       }
-      // Navigate to home if login successful
+      // Navigate to role-based screen via RootScreen when login is successful
       if (next is AuthenticationLoaded &&
           previous is! AuthenticationLoaded &&
           mounted) {
-        // TODO: Navigate to home screen
-        // Navigator.pushReplacement(...);
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     });
 

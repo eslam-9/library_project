@@ -20,22 +20,32 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           email: currentUser.email ?? '',
           password: '', // Don't store password in state
           phone: userMetadata?['phone'] ?? '',
+          role: 'Member',
         ),
       );
     }
     return AuthenticationInitialState();
   }
 
-  void _checkAuthStatus() {
+  Future<void> _checkAuthStatus() async {
     final currentUser = SupabaseService.getCurrentUser();
     if (currentUser != null) {
       final userMetadata = currentUser.userMetadata;
+      final profile = await SupabaseService.getProfile(currentUser.id);
+      final role = (profile?['role'] as String?) ?? 'Member';
+      final fullName =
+          (profile?['full_name'] as String?) ??
+          userMetadata?['full_name'] ??
+          currentUser.email ??
+          '';
+
       state = AuthenticationLoaded(
         UserModel(
-          name: userMetadata?['full_name'] ?? currentUser.email ?? '',
+          name: fullName,
           email: currentUser.email ?? '',
           password: '',
           phone: userMetadata?['phone'] ?? '',
+          role: role,
         ),
       );
     }
@@ -59,12 +69,19 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
       if (response.user != null) {
         final userMetadata = response.user!.userMetadata;
+        final profile = await SupabaseService.getProfile(response.user!.id);
+        final role = (profile?['role'] as String?) ?? 'Member';
+        final fullName =
+            (profile?['full_name'] as String?) ??
+            userMetadata?['full_name'] ??
+            '$firstName $lastName';
         state = AuthenticationLoaded(
           UserModel(
-            name: userMetadata?['full_name'] ?? '$firstName $lastName',
+            name: fullName,
             email: email,
             password: '', // Don't store password
             phone: userMetadata?['phone'] ?? '',
+            role: role,
           ),
         );
       } else {
@@ -92,12 +109,20 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
 
       if (response.user != null) {
         final userMetadata = response.user!.userMetadata;
+        final profile = await SupabaseService.getProfile(response.user!.id);
+        final role = (profile?['role'] as String?) ?? 'Member';
+        final fullName =
+            (profile?['full_name'] as String?) ??
+            userMetadata?['full_name'] ??
+            response.user!.email ??
+            '';
         state = AuthenticationLoaded(
           UserModel(
-            name: userMetadata?['full_name'] ?? response.user!.email ?? '',
+            name: fullName,
             email: email,
             password: '', // Don't store password
             phone: userMetadata?['phone'] ?? '',
+            role: role,
           ),
         );
       } else {
