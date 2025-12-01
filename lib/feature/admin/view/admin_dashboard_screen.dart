@@ -6,6 +6,7 @@ import 'package:library_project/feature/admin/view/widgets/admin_stat_card.dart'
 import 'package:library_project/feature/admin/view/widgets/borrowing_tile.dart';
 import 'package:library_project/feature/admin/viewmodel/admin_dashboard_notifier.dart';
 import 'package:library_project/feature/admin/viewmodel/admin_dashboard_state.dart';
+import 'package:library_project/feature/authentication/viewmodel/auth_notifier.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -14,6 +15,7 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adminDashboardProvider);
     final notifier = ref.read(adminDashboardProvider.notifier);
+    final authNotifier = ref.read(authNotifierProvider.notifier);
 
     Widget body;
 
@@ -49,6 +51,13 @@ class AdminDashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            onPressed: () async {
+              await authNotifier.signOut();
+            },
+            icon: const Icon(Icons.logout, color: Color(0xFF231480)),
+            tooltip: 'Sign out',
+          ),
+          IconButton(
             onPressed: notifier.refreshDashboard,
             icon: const Icon(Icons.refresh_outlined, color: Color(0xFF231480)),
             tooltip: 'Reload',
@@ -73,37 +82,37 @@ class _DashboardBody extends StatelessWidget {
         'Members',
         data.stats.totalMembers.toString(),
         Icons.people_alt_outlined,
-        const Color(0xFF231480)
+        const Color(0xFF231480),
       ),
       (
         'Books',
         data.stats.totalBooks.toString(),
         Icons.menu_book_outlined,
-        const Color(0xFF8E2DE2)
+        const Color(0xFF8E2DE2),
       ),
       (
         'Copies',
         data.stats.totalCopies.toString(),
         Icons.inventory_2_outlined,
-        const Color(0xFF4A00E0)
+        const Color(0xFF4A00E0),
       ),
       (
         'Categories',
         data.stats.totalCategories.toString(),
         Icons.category_outlined,
-        const Color(0xFF6C2BD9)
+        const Color(0xFF6C2BD9),
       ),
       (
         'Borrowed',
         data.stats.activeBorrowings.toString(),
         Icons.assignment_outlined,
-        const Color(0xFFF7971E)
+        const Color(0xFFF7971E),
       ),
       (
         'Available Copies',
         data.stats.availableCopies.toString(),
         Icons.check_circle_outline,
-        const Color(0xFF30C48D)
+        const Color(0xFF30C48D),
       ),
     ];
 
@@ -121,10 +130,7 @@ class _DashboardBody extends StatelessWidget {
         SizedBox(height: 8.h),
         Text(
           'Here’s a quick overview of what’s happening in your library.',
-          style: TextStyle(
-            fontSize: 16.sp,
-            color: const Color(0xFF6F6F6F),
-          ),
+          style: TextStyle(fontSize: 16.sp, color: const Color(0xFF6F6F6F)),
         ),
         SizedBox(height: 24.h),
         GridView.builder(
@@ -133,7 +139,7 @@ class _DashboardBody extends StatelessWidget {
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 16.h,
-            crossAxisSpacing: 16.w,
+            crossAxisSpacing: 10.w,
             childAspectRatio: 1.25,
           ),
           itemCount: stats.length,
@@ -156,8 +162,9 @@ class _DashboardBody extends StatelessWidget {
         if (data.recentBorrowings.isEmpty)
           const _EmptySection(message: 'No borrowings logged yet.')
         else
-          ...data.recentBorrowings
-              .map((record) => BorrowingTile(record: record)),
+          ...data.recentBorrowings.map(
+            (record) => BorrowingTile(record: record),
+          ),
         SizedBox(height: 24.h),
         _SectionHeader(
           title: 'Categories',
@@ -172,8 +179,10 @@ class _DashboardBody extends StatelessWidget {
                 .map(
                   (category) => Container(
                     width: double.infinity,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
+                    ),
                     margin: EdgeInsets.only(bottom: 12.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -213,7 +222,10 @@ class _DashboardBody extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, color: Color(0xFF989898)),
+                        const Icon(
+                          Icons.chevron_right,
+                          color: Color(0xFF989898),
+                        ),
                       ],
                     ),
                   ),
@@ -252,10 +264,7 @@ class _SectionHeader extends StatelessWidget {
         SizedBox(height: 4.h),
         Text(
           subtitle,
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: const Color(0xFF6F6F6F),
-          ),
+          style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6F6F6F)),
         ),
       ],
     );
@@ -268,9 +277,7 @@ class _LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: CircularProgressIndicator(
-        color: Color(0xFF231480),
-      ),
+      child: CircularProgressIndicator(color: Color(0xFF231480)),
     );
   }
 }
@@ -334,12 +341,8 @@ class _EmptySection extends StatelessWidget {
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 14.sp,
-          color: const Color(0xFF989898),
-        ),
+        style: TextStyle(fontSize: 14.sp, color: const Color(0xFF989898)),
       ),
     );
   }
 }
-

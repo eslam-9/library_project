@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/core/theming.dart';
-import 'package:library_project/feature/onboarding/view/onboardingScreen.dart';
+import 'package:library_project/core/root_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -32,7 +32,7 @@ class MainApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Library app',
             theme: AppTheme.lightTheme,
-            home: const OnboardingScreen(),
+            home: const RootScreen(),
           ),
         );
       },

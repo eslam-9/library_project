@@ -21,6 +21,14 @@ class SupabaseService {
           'full_name': '$firstName $lastName',
         },
       );
+      if (response.user != null) {
+        final userId = response.user!.id;
+        await _supabase.from('profiles').insert({
+          'id': userId,
+          'full_name': '$firstName $lastName',
+          'role': 'Member',
+        });
+      }
       return response;
     } catch (e) {
       rethrow;
@@ -60,5 +68,14 @@ class SupabaseService {
   /// Check if user is signed in
   static bool isSignedIn() {
     return _supabase.auth.currentUser != null;
+  }
+
+  static Future<Map<String, dynamic>?> getProfile(String userId) async {
+    final response = await _supabase
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', userId)
+        .maybeSingle();
+    return response;
   }
 }
