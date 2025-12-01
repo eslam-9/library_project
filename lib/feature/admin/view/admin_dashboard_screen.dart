@@ -4,9 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/feature/admin/model/admin_dashboard_model.dart';
 import 'package:library_project/feature/admin/view/widgets/admin_stat_card.dart';
 import 'package:library_project/feature/admin/view/widgets/borrowing_tile.dart';
+import 'package:library_project/feature/admin/view/admin_add_book_screen.dart';
 import 'package:library_project/feature/admin/viewmodel/admin_dashboard_notifier.dart';
 import 'package:library_project/feature/admin/viewmodel/admin_dashboard_state.dart';
 import 'package:library_project/feature/authentication/viewmodel/auth_notifier.dart';
+import 'package:library_project/feature/authentication/viewmodel/auth_state.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -16,6 +18,12 @@ class AdminDashboardScreen extends ConsumerWidget {
     final state = ref.watch(adminDashboardProvider);
     final notifier = ref.read(adminDashboardProvider.notifier);
     final authNotifier = ref.read(authNotifierProvider.notifier);
+    final authState = ref.watch(authNotifierProvider);
+
+    String userName = 'Admin';
+    if (authState is AuthenticationLoaded) {
+      userName = authState.user.name;
+    }
 
     Widget body;
 
@@ -30,7 +38,7 @@ class AdminDashboardScreen extends ConsumerWidget {
       body = RefreshIndicator(
         color: const Color(0xFF231480),
         onRefresh: notifier.refreshDashboard,
-        child: _DashboardBody(data: state.data),
+        child: _DashboardBody(data: state.data, userName: userName),
       );
     } else {
       body = const _LoadingState();
@@ -50,6 +58,16 @@ class AdminDashboardScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AdminAddBookScreen()),
+              );
+              await notifier.refreshDashboard();
+            },
+            icon: const Icon(Icons.add, color: Color(0xFF231480)),
+            tooltip: 'Add book',
+          ),
           IconButton(
             onPressed: () async {
               await authNotifier.signOut();
@@ -72,8 +90,9 @@ class AdminDashboardScreen extends ConsumerWidget {
 
 class _DashboardBody extends StatelessWidget {
   final AdminDashboardData data;
+  final String userName;
 
-  const _DashboardBody({required this.data});
+  const _DashboardBody({required this.data, required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +139,7 @@ class _DashboardBody extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
       children: [
         Text(
-          'Good day, Admin 👋',
+          'Good day, $userName 👋',
           style: TextStyle(
             fontSize: 28.sp,
             fontWeight: FontWeight.bold,

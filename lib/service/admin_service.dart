@@ -62,6 +62,37 @@ class AdminService {
     }
   }
 
+  static Future<void> addBook({
+    required String title,
+    String? author,
+    String? description,
+    int copiesCount = 1,
+  }) async {
+    try {
+      final insertedBook = await _supabase
+          .from('books')
+          .insert({
+            'title': title,
+            if (author != null) 'author': author,
+            if (description != null) 'description': description,
+          })
+          .select('id')
+          .single();
+
+      final bookId = insertedBook['id'] as int;
+
+      if (copiesCount < 1) {
+        copiesCount = 1;
+      }
+
+      final copies = List.generate(copiesCount, (_) => {'book_id': bookId});
+
+      await _supabase.from('book_copies').insert(copies);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
   static Future<int> _countRows(
     PostgrestFilterBuilder<PostgrestList> query,
   ) async {
