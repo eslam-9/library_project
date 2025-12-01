@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/feature/authentication/viewmodel/auth_notifier.dart';
 import 'package:library_project/feature/authentication/viewmodel/auth_state.dart';
 import 'package:library_project/feature/member/model/member_dashboard_model.dart';
+import 'package:library_project/feature/member/view/member_books_screen.dart';
 import 'package:library_project/feature/member/view/widgets/member_borrowing_tile.dart';
 import 'package:library_project/feature/member/view/widgets/member_stat_card.dart';
 import 'package:library_project/feature/member/viewmodel/member_dashboard_notifier.dart';
@@ -57,6 +58,19 @@ class MemberDashboardScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MemberBooksScreen()),
+              );
+              await notifier.refreshDashboard();
+            },
+            icon: const Icon(
+              Icons.menu_book_outlined,
+              color: Color(0xFF231480),
+            ),
+            tooltip: 'Browse books',
+          ),
           IconButton(
             onPressed: () async {
               await authNotifier.signOut();

@@ -1,4 +1,5 @@
 import 'package:library_project/feature/member/model/member_dashboard_model.dart';
+import 'package:library_project/feature/member/model/member_books_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MemberService {
@@ -167,5 +168,85 @@ class MemberService {
         .single();
 
     return inserted;
+  }
+
+  static Future<List<MemberBook>> fetchAllBooks() async {
+    final booksRows = await _supabase
+        .from('books')
+        .select('id, title, author, description');
+
+    if (booksRows.isEmpty) {
+      return [];
+    }
+
+    final bookIds = booksRows
+        .map((row) => row['id'] as int?)
+        .whereType<int>()
+        .toList();
+
+    final copiesRows = await _supabase
+        .from('book_copies')
+        .select('book_id, status')
+        .inFilter('book_id', bookIds);
+
+    final Map<int, int> availableCounts = {};
+    for (final row in copiesRows) {
+      final bookId = row['book_id'] as int?;
+      final status = row['status'] as String?;
+      if (bookId == null) continue;
+      if (status == 'Available') {
+        availableCounts[bookId] = (availableCounts[bookId] ?? 0) + 1;
+      }
+    }
+
+    return booksRows.map<MemberBook>((row) {
+      final id = row['id'] as int;
+      final title = row['title'] as String? ?? 'Untitled';
+      final author = row['author'] as String?;
+      final description = row['description'] as String?;
+      final available = availableCounts[id] ?? 0;
+
+      return MemberBook(
+        id: id,
+        title: title,
+        author: author,
+        description: description,
+        availableCopies: available,
+      );
+    }).toList();
+  }
+
+  static Future<void> borrowBook(int bookId) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw AuthException('User not authenticated');
+    }
+
+    final memberRow = await _getOrCreateMember(user);
+    final memberId = memberRow['id'] as int;
+
+    final copyRow = await _supabase
+        .from('book_copies')
+        .select('id')
+        .eq('book_id', bookId)
+        .eq('status', 'Available')
+        .limit(1)
+        .maybeSingle();
+
+    if (copyRow == null) {
+      throw Exception('No available copies for this book');
+    }
+
+    final copyId = copyRow['id'] as int;
+
+    final dueAt = DateTime.now()
+        .add(const Duration(days: 14))
+        .toIso8601String();
+
+    await _supabase.from('borrowing').insert({
+      'copy_id': copyId,
+      'member_id': memberId,
+      'due_at': dueAt,
+    });
   }
 }
