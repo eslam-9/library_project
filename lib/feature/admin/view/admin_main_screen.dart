@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/feature/admin/view/admin_add_book_screen.dart';
 import 'package:library_project/feature/admin/view/admin_books_screen.dart';
+import 'package:library_project/feature/admin/view/admin_borrowing_requests_screen.dart';
 import 'package:library_project/feature/admin/view/admin_dashboard_screen.dart';
 import 'package:library_project/feature/admin/view/admin_profile_screen.dart';
 
@@ -19,6 +20,7 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
   final List<Widget> _screens = [
     const AdminDashboardScreen(),
     const AdminBooksScreen(),
+    const AdminBorrowingRequestsScreen(),
     const AdminAddBookScreen(),
     const AdminProfileScreen(),
   ];
@@ -66,6 +68,11 @@ class _AdminMainScreenState extends State<AdminMainScreen> {
               icon: Icon(Icons.menu_book_outlined),
               activeIcon: Icon(Icons.menu_book),
               label: 'Books',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment_outlined),
+              activeIcon: Icon(Icons.assignment),
+              label: 'Requests',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.add_circle_outline),

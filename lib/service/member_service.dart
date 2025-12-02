@@ -1,5 +1,6 @@
 import 'package:library_project/feature/member/model/member_dashboard_model.dart';
 import 'package:library_project/feature/member/model/member_books_model.dart';
+import 'package:library_project/feature/member/model/available_book_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MemberService {
@@ -248,5 +249,118 @@ class MemberService {
       'member_id': memberId,
       'due_at': dueAt,
     });
+  }
+
+  static Future<List<AvailableBook>> fetchAvailableBooks() async {
+    try {
+      final response = await _supabase
+          .from('books')
+          .select(
+            'id, title, author, description, daily_price, category_id, categories(name), book_copies(id, status)',
+          )
+          .order('title', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response).map((book) {
+        final copies = (book['book_copies'] as List?) ?? [];
+        final availableCount = copies
+            .where((c) => c['status'] == 'Available')
+            .length;
+
+        final categoryData = book['categories'];
+        final categoryName = categoryData != null
+            ? (categoryData is Map ? categoryData['name'] as String? : null)
+            : null;
+
+        return AvailableBook(
+          id: book['id'] as int,
+          title: book['title'] as String,
+          author: book['author'] as String?,
+          description: book['description'] as String?,
+          categoryName: categoryName,
+          dailyPrice: (book['daily_price'] as num?)?.toDouble() ?? 0.0,
+          availableCopies: availableCount,
+        );
+      }).toList();
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<bool> checkIfAlreadyBorrowed(int memberId, int bookId) async {
+    try {
+      // Get all copies of this book
+      final copies = await _supabase
+          .from('book_copies')
+          .select('id')
+          .eq('book_id', bookId);
+
+      if (copies.isEmpty) {
+        return false;
+      }
+
+      final copyIds = copies.map((c) => c['id'] as int).toList();
+
+      // Check if member has any pending or approved borrowing for any copy of this book
+      final borrowings = await _supabase
+          .from('borrowing')
+          .select('id')
+          .eq('member_id', memberId)
+          .inFilter('copy_id', copyIds)
+          .inFilter('status', ['pending', 'approved']);
+
+      return borrowings.isNotEmpty;
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<void> requestBorrowing({
+    required int memberId,
+    required int bookId,
+    required int days,
+    required double dailyPrice,
+  }) async {
+    try {
+      // Get an available copy
+      final availableCopy = await _supabase
+          .from('book_copies')
+          .select('id')
+          .eq('book_id', bookId)
+          .eq('status', 'Available')
+          .limit(1)
+          .maybeSingle();
+
+      if (availableCopy == null) {
+        throw Exception('No available copies found for this book');
+      }
+
+      final copyId = availableCopy['id'] as int;
+      final totalCost = dailyPrice * days;
+
+      // Create borrowing request
+      await _supabase.from('borrowing').insert({
+        'copy_id': copyId,
+        'member_id': memberId,
+        'days_requested': days,
+        'total_cost': totalCost,
+        'status': 'pending',
+      });
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<int?> getMemberIdByProfileId(String profileId) async {
+    try {
+      final response = await _supabase
+          .from('members')
+          .select('id')
+          .eq('profile_id', profileId)
+          .maybeSingle();
+
+      return response?['id'] as int?;
+    } catch (error) {
+      rethrow;
+    }
   }
 }

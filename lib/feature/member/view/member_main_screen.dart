@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:library_project/feature/member/view/member_books_screen.dart';
+import 'package:library_project/feature/member/view/member_browse_books_screen.dart';
 import 'package:library_project/feature/member/view/member_dashboard_screen.dart';
 import 'package:library_project/feature/member/view/member_profile_screen.dart';
 
@@ -17,7 +17,7 @@ class _MemberMainScreenState extends State<MemberMainScreen> {
 
   final List<Widget> _screens = [
     const MemberDashboardScreen(),
-    const MemberBooksScreen(),
+    const MemberBrowseBooksScreen(),
     const MemberProfileScreen(),
   ];
 
@@ -61,9 +61,9 @@ class _MemberMainScreenState extends State<MemberMainScreen> {
               label: 'Dashboard',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
-              activeIcon: Icon(Icons.menu_book),
-              label: 'Books',
+              icon: Icon(Icons.library_books_outlined),
+              activeIcon: Icon(Icons.library_books),
+              label: 'Browse',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
