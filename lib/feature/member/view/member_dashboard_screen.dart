@@ -60,26 +60,6 @@ class MemberDashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () async {
-              await Navigator.of(
-                context,
-              ).pushNamed(MemberBooksScreen.routeName);
-              await notifier.refreshDashboard();
-            },
-            icon: const Icon(
-              Icons.menu_book_outlined,
-              color: Color(0xFF231480),
-            ),
-            tooltip: 'Browse books',
-          ),
-          IconButton(
-            onPressed: () async {
-              await authNotifier.signOut();
-            },
-            icon: const Icon(Icons.logout, color: Color(0xFF231480)),
-            tooltip: 'Sign out',
-          ),
-          IconButton(
             onPressed: notifier.refreshDashboard,
             icon: const Icon(Icons.refresh_outlined, color: Color(0xFF231480)),
             tooltip: 'Reload',

@@ -71,11 +71,59 @@ class SupabaseService {
   }
 
   static Future<Map<String, dynamic>?> getProfile(String userId) async {
-    final response = await _supabase
+    final profileResponse = await _supabase
         .from('profiles')
         .select('full_name, role')
         .eq('id', userId)
         .maybeSingle();
-    return response;
+
+    if (profileResponse == null) return null;
+
+    final memberResponse = await _supabase
+        .from('members')
+        .select('phone, address')
+        .eq('profile_id', userId)
+        .maybeSingle();
+
+    final Map<String, dynamic> data = {...profileResponse};
+    if (memberResponse != null) {
+      data.addAll(memberResponse);
+    }
+    return data;
+  }
+
+  static Future<void> updateMemberProfile({
+    required String userId,
+    required String fullName,
+    required String phone,
+    required String address,
+  }) async {
+    // Update profiles table
+    await _supabase
+        .from('profiles')
+        .update({'full_name': fullName})
+        .eq('id', userId);
+
+    // Check if member record exists
+    final member = await _supabase
+        .from('members')
+        .select()
+        .eq('profile_id', userId)
+        .maybeSingle();
+
+    if (member != null) {
+      await _supabase
+          .from('members')
+          .update({'phone': phone, 'address': address})
+          .eq('profile_id', userId);
+    } else {
+      final user = _supabase.auth.currentUser;
+      await _supabase.from('members').insert({
+        'profile_id': userId,
+        'email': user?.email,
+        'phone': phone,
+        'address': address,
+      });
+    }
   }
 }
