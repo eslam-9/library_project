@@ -8,6 +8,7 @@ import 'package:library_project/feature/onboarding/view/onboardingScreen.dart';
 
 class RootScreen extends ConsumerWidget {
   const RootScreen({super.key});
+  static const String routeName = '/';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

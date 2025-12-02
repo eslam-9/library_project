@@ -8,6 +8,7 @@ import 'package:library_project/feature/authentication/viewmodel/auth_state.dart
 
 class Signup extends ConsumerStatefulWidget {
   const Signup({super.key});
+  static const String routeName = '/signup';
 
   @override
   ConsumerState<Signup> createState() => _SignupState();
@@ -58,8 +59,7 @@ class _SignupState extends ConsumerState<Signup> {
         _lastNameController.clear();
         _emailController.clear();
         _passwordController.clear();
-        // TODO: Navigate to home screen
-        // Navigator.pushReplacement(...);
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     });
 
@@ -242,9 +242,9 @@ class _SignupState extends ConsumerState<Signup> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushReplacement(
+                        Navigator.pushReplacementNamed(
                           context,
-                          MaterialPageRoute(builder: (context) => Login()),
+                          Login.routeName,
                         );
                       },
                       child: Text(

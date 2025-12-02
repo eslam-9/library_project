@@ -11,6 +11,7 @@ final memberBooksProvider = FutureProvider<List<MemberBook>>((ref) async {
 
 class MemberBooksScreen extends ConsumerWidget {
   const MemberBooksScreen({super.key});
+  static const String routeName = '/memberBooks';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

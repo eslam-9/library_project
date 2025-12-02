@@ -12,6 +12,7 @@ import 'package:library_project/feature/member/viewmodel/member_dashboard_state.
 
 class MemberDashboardScreen extends ConsumerWidget {
   const MemberDashboardScreen({super.key});
+  static const String routeName = '/memberDashboard';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,9 +61,9 @@ class MemberDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MemberBooksScreen()),
-              );
+              await Navigator.of(
+                context,
+              ).pushNamed(MemberBooksScreen.routeName);
               await notifier.refreshDashboard();
             },
             icon: const Icon(

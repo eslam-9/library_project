@@ -12,6 +12,7 @@ import 'package:library_project/feature/authentication/viewmodel/auth_state.dart
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
+  static const String routeName = '/adminDashboard';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,9 +61,9 @@ class AdminDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AdminAddBookScreen()),
-              );
+              await Navigator.of(
+                context,
+              ).pushNamed(AdminAddBookScreen.routeName);
               await notifier.refreshDashboard();
             },
             icon: const Icon(Icons.add, color: Color(0xFF231480)),

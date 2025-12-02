@@ -8,6 +8,7 @@ import 'package:library_project/feature/authentication/viewmodel/auth_state.dart
 
 class Login extends ConsumerStatefulWidget {
   const Login({super.key});
+  static const String routeName = '/login';
 
   @override
   ConsumerState<Login> createState() => _LoginState();
