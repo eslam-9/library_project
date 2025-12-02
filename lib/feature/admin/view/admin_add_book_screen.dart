@@ -4,6 +4,7 @@ import 'package:library_project/service/admin_service.dart';
 
 class AdminAddBookScreen extends StatefulWidget {
   const AdminAddBookScreen({super.key});
+  static const String routeName = '/adminAddBook';
 
   @override
   State<AdminAddBookScreen> createState() => _AdminAddBookScreenState();

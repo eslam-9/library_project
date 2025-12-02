@@ -56,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _handleNextButton() {
     if (_controller.page == pages.length - 1) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+      Navigator.pushNamed(context, Login.routeName);
     } else {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),
