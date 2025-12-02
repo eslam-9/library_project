@@ -20,6 +20,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           email: currentUser.email ?? '',
           password: '', // Don't store password in state
           phone: userMetadata?['phone'] ?? '',
+          address:
+              '', // Initial state might not have address loaded yet if not in metadata
           role: 'Member',
         ),
       );
@@ -44,7 +46,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
           name: fullName,
           email: currentUser.email ?? '',
           password: '',
-          phone: userMetadata?['phone'] ?? '',
+          phone: userMetadata?['phone'] ?? profile?['phone'] ?? '',
+          address: profile?['address'] ?? '',
           role: role,
         ),
       );
@@ -81,6 +84,7 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             email: email,
             password: '', // Don't store password
             phone: userMetadata?['phone'] ?? '',
+            address: '',
             role: role,
           ),
         );
@@ -121,7 +125,8 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
             name: fullName,
             email: email,
             password: '', // Don't store password
-            phone: userMetadata?['phone'] ?? '',
+            phone: userMetadata?['phone'] ?? profile?['phone'] ?? '',
+            address: profile?['address'] ?? '',
             role: role,
           ),
         );
@@ -145,6 +150,45 @@ class AuthNotifier extends StateNotifier<AuthenticationState> {
       state = AuthenticationInitialState();
     } catch (e) {
       state = AuthenticationError('Failed to sign out. Please try again.');
+    }
+  }
+
+  Future<void> updateProfile({
+    required String fullName,
+    required String phone,
+    required String address,
+  }) async {
+    final currentUser = SupabaseService.getCurrentUser();
+    if (currentUser == null) return;
+
+    state = AuthenticationLoading();
+
+    try {
+      await SupabaseService.updateMemberProfile(
+        userId: currentUser.id,
+        fullName: fullName,
+        phone: phone,
+        address: address,
+      );
+
+      // Refresh profile data
+      final profile = await SupabaseService.getProfile(currentUser.id);
+      final role = (profile?['role'] as String?) ?? 'Member';
+
+      state = AuthenticationLoaded(
+        UserModel(
+          name: fullName,
+          email: currentUser.email ?? '',
+          password: '',
+          phone: phone,
+          address: address,
+          role: role,
+        ),
+      );
+    } catch (e) {
+      state = AuthenticationError(
+        'Failed to update profile. Please try again.',
+      );
     }
   }
 }

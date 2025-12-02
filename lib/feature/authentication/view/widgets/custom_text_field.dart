@@ -9,6 +9,10 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.controller,
     this.onChanged,
+    this.readOnly = false,
+    this.fillColor,
+    this.keyboardType,
+    this.maxLines = 1,
   });
 
   final String hintText;
@@ -16,12 +20,16 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final bool readOnly;
+  final Color? fillColor;
+  final TextInputType? keyboardType;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: fillColor ?? Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -35,10 +43,13 @@ class CustomTextField extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         obscureText: obscureText,
+        readOnly: readOnly,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
         style: TextStyle(fontSize: 16.sp, color: Colors.black),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(fontSize: 16.sp, color: Color(0xFF989898)),
+          hintStyle: TextStyle(fontSize: 16.sp, color: const Color(0xFF989898)),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,

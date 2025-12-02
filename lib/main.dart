@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/core/theming.dart';
 import 'package:library_project/core/root_screen.dart';
+import 'package:library_project/core/app_route.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -33,7 +34,8 @@ class MainApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Library app',
             theme: AppTheme.lightTheme,
-            home: const RootScreen(),
+            onGenerateRoute: AppRoute.generate,
+            initialRoute: RootScreen.routeName,
           ),
         );
       },

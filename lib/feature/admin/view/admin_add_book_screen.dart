@@ -4,6 +4,7 @@ import 'package:library_project/service/admin_service.dart';
 
 class AdminAddBookScreen extends StatefulWidget {
   const AdminAddBookScreen({super.key});
+  static const String routeName = '/adminAddBook';
 
   @override
   State<AdminAddBookScreen> createState() => _AdminAddBookScreenState();
@@ -45,8 +46,14 @@ class _AdminAddBookScreenState extends State<AdminAddBookScreen> {
     }
 
     int copies = int.tryParse(copiesText) ?? 1;
-    if (copies < 1) {
-      copies = 1;
+    if (copies < 1 || copies > 1000) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Number of copies must be between 1 and 1000'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
     setState(() {
