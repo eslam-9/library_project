@@ -1,4 +1,5 @@
 import 'package:library_project/feature/admin/model/admin_dashboard_model.dart';
+import 'package:library_project/feature/admin/model/borrowing_request_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminService {
@@ -66,6 +67,8 @@ class AdminService {
     required String title,
     String? author,
     String? description,
+    int? categoryId,
+    required double dailyPrice,
     int copiesCount = 1,
   }) async {
     try {
@@ -75,6 +78,8 @@ class AdminService {
             'title': title,
             if (author != null) 'author': author,
             if (description != null) 'description': description,
+            if (categoryId != null) 'category_id': categoryId,
+            'daily_price': dailyPrice,
           })
           .select('id')
           .single();
@@ -88,6 +93,115 @@ class AdminService {
       final copies = List.generate(copiesCount, (_) => {'book_id': bookId});
 
       await _supabase.from('book_copies').insert(copies);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchAllCategories() async {
+    try {
+      final response = await _supabase
+          .from('categories')
+          .select('id, name')
+          .order('name', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<List<BorrowingRequest>> fetchPendingBorrowingRequests() async {
+    try {
+      final borrowingRows = await _supabase
+          .from('borrowing')
+          .select(
+            'id, member_id, copy_id, days_requested, total_cost, borrowed_at',
+          )
+          .eq('status', 'pending')
+          .order('borrowed_at', ascending: false);
+
+      if (borrowingRows.isEmpty) {
+        return [];
+      }
+
+      final memberIds = borrowingRows
+          .map((row) => row['member_id'] as int?)
+          .whereType<int>()
+          .toSet()
+          .toList();
+
+      final copyIds = borrowingRows
+          .map((row) => row['copy_id'] as int?)
+          .whereType<int>()
+          .toSet()
+          .toList();
+
+      final members = await _fetchMembersByIds(memberIds);
+      final copies = await _fetchCopiesByIds(copyIds);
+
+      final bookIds = copies.values
+          .map((copy) => copy['book_id'] as int?)
+          .whereType<int>()
+          .toSet()
+          .toList();
+
+      final books = await _fetchBooksByIds(bookIds);
+
+      return borrowingRows.map((row) {
+        final memberId = row['member_id'] as int?;
+        final copyId = row['copy_id'] as int?;
+
+        final member = members[memberId];
+        final memberEmail = member?['email'] as String? ?? 'Unknown';
+        final memberName = memberEmail.split('@').first;
+
+        final copy = copies[copyId];
+        final bookId = copy?['book_id'] as int?;
+        final bookTitle = books[bookId]?['title'] as String? ?? 'Unknown Book';
+
+        return BorrowingRequest(
+          id: row['id'] as int,
+          memberName: memberName,
+          memberEmail: memberEmail,
+          bookTitle: bookTitle,
+          daysRequested: row['days_requested'] as int? ?? 1,
+          totalCost: (row['total_cost'] as num?)?.toDouble() ?? 0.0,
+          requestedAt: _parseDate(row['borrowed_at']) ?? DateTime.now(),
+          copyId: copyId ?? 0,
+        );
+      }).toList();
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<void> approveBorrowingRequest(int borrowingId) async {
+    try {
+      final borrowing = await _supabase
+          .from('borrowing')
+          .select('days_requested')
+          .eq('id', borrowingId)
+          .single();
+
+      final daysRequested = borrowing['days_requested'] as int? ?? 7;
+      final dueDate = DateTime.now().add(Duration(days: daysRequested));
+
+      await _supabase
+          .from('borrowing')
+          .update({'status': 'approved', 'due_at': dueDate.toIso8601String()})
+          .eq('id', borrowingId);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  static Future<void> declineBorrowingRequest(int borrowingId) async {
+    try {
+      await _supabase
+          .from('borrowing')
+          .update({'status': 'declined'})
+          .eq('id', borrowingId);
     } catch (error) {
       rethrow;
     }
