@@ -1,76 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/feature/member/model/available_book_model.dart';
-import 'package:library_project/service/member_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:library_project/feature/member/viewmodel/member_browse_books_notifier.dart';
+import 'package:library_project/feature/member/viewmodel/member_browse_books_state.dart';
 
-class MemberBrowseBooksScreen extends StatefulWidget {
+class MemberBrowseBooksScreen extends ConsumerStatefulWidget {
   const MemberBrowseBooksScreen({super.key});
   static const String routeName = '/memberBrowseBooks';
 
   @override
-  State<MemberBrowseBooksScreen> createState() =>
+  ConsumerState<MemberBrowseBooksScreen> createState() =>
       _MemberBrowseBooksScreenState();
 }
 
-class _MemberBrowseBooksScreenState extends State<MemberBrowseBooksScreen> {
-  List<AvailableBook> _books = [];
-  bool _isLoading = true;
-  int? _memberId;
+class _MemberBrowseBooksScreenState
+    extends ConsumerState<MemberBrowseBooksScreen> {
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _searchController.addListener(_onSearchChanged);
   }
 
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) {
-        _memberId = await MemberService.getMemberIdByProfileId(user.id);
-      }
-
-      final books = await MemberService.fetchAvailableBooks();
-      setState(() {
-        _books = books;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load books'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+  void _onSearchChanged() {
+    ref
+        .read(memberBrowseBooksProvider.notifier)
+        .searchBooks(_searchController.text);
   }
 
   Future<void> _showBorrowDialog(AvailableBook book) async {
-    if (_memberId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Member ID not found'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+    final notifier = ref.read(memberBrowseBooksProvider.notifier);
 
     // Check if already borrowed
-    final alreadyBorrowed = await MemberService.checkIfAlreadyBorrowed(
-      _memberId!,
-      book.id,
-    );
+    final alreadyBorrowed = await notifier.checkIfAlreadyBorrowed(book.id);
 
     if (alreadyBorrowed) {
       if (mounted) {
@@ -91,9 +61,12 @@ class _MemberBrowseBooksScreenState extends State<MemberBrowseBooksScreen> {
         context: context,
         builder: (context) => _BorrowRequestDialog(
           book: book,
-          memberId: _memberId!,
-          onSuccess: () {
-            _loadData();
+          onSubmit: (days, dailyPrice) async {
+            await notifier.requestBorrowing(
+              bookId: book.id,
+              days: days,
+              dailyPrice: dailyPrice,
+            );
           },
         ),
       );
@@ -102,6 +75,8 @@ class _MemberBrowseBooksScreenState extends State<MemberBrowseBooksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(memberBrowseBooksProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFDCDBFD),
       appBar: AppBar(
@@ -116,34 +91,127 @@ class _MemberBrowseBooksScreenState extends State<MemberBrowseBooksScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF231480)),
-              ),
-            )
-          : _books.isEmpty
-          ? Center(
-              child: Text(
-                'No books available',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  color: const Color(0xFF231480).withOpacity(0.6),
+      body: Column(
+        children: [
+          // Search Bar
+          if (state is MemberBrowseBooksLoaded)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search books by name...',
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Color(0xFF231480),
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF231480),
+                      width: 2,
+                    ),
+                  ),
                 ),
               ),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              child: ListView.builder(
-                padding: EdgeInsets.all(16.w),
-                itemCount: _books.length,
-                itemBuilder: (context, index) {
-                  final book = _books[index];
-                  return _buildBookCard(book);
-                },
-              ),
             ),
+          // Books List
+          Expanded(child: _buildBody(state)),
+        ],
+      ),
     );
+  }
+
+  Widget _buildBody(MemberBrowseBooksState state) {
+    if (state is MemberBrowseBooksLoading ||
+        state is MemberBrowseBooksInitial) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF231480)),
+        ),
+      );
+    } else if (state is MemberBrowseBooksError) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline, size: 48.w, color: Colors.red),
+              SizedBox(height: 16.h),
+              Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: const Color(0xFF231480),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(memberBrowseBooksProvider.notifier).refreshBooks();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF231480),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else if (state is MemberBrowseBooksLoaded) {
+      if (state.filteredBooks.isEmpty) {
+        return Center(
+          child: Text(
+            _searchController.text.isEmpty
+                ? 'No books available'
+                : 'No books found matching "${_searchController.text}"',
+            style: TextStyle(
+              fontSize: 18.sp,
+              color: const Color(0xFF231480).withOpacity(0.6),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(memberBrowseBooksProvider.notifier).refreshBooks();
+        },
+        child: ListView.builder(
+          padding: EdgeInsets.all(16.w),
+          itemCount: state.filteredBooks.length,
+          itemBuilder: (context, index) {
+            final book = state.filteredBooks[index];
+            return _buildBookCard(book);
+          },
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildBookCard(AvailableBook book) {
@@ -276,7 +344,6 @@ class _MemberBrowseBooksScreenState extends State<MemberBrowseBooksScreen> {
                   backgroundColor: const Color(0xFF231480),
                   foregroundColor: Colors.white,
                   minimumSize: Size(50.w, 58.h),
-
                   padding: EdgeInsets.symmetric(
                     horizontal: 24.w,
                     vertical: 12.h,
@@ -297,14 +364,9 @@ class _MemberBrowseBooksScreenState extends State<MemberBrowseBooksScreen> {
 
 class _BorrowRequestDialog extends StatefulWidget {
   final AvailableBook book;
-  final int memberId;
-  final VoidCallback onSuccess;
+  final Future<void> Function(int days, double dailyPrice) onSubmit;
 
-  const _BorrowRequestDialog({
-    required this.book,
-    required this.memberId,
-    required this.onSuccess,
-  });
+  const _BorrowRequestDialog({required this.book, required this.onSubmit});
 
   @override
   State<_BorrowRequestDialog> createState() => _BorrowRequestDialogState();
@@ -322,12 +384,7 @@ class _BorrowRequestDialogState extends State<_BorrowRequestDialog> {
     });
 
     try {
-      await MemberService.requestBorrowing(
-        memberId: widget.memberId,
-        bookId: widget.book.id,
-        days: _days,
-        dailyPrice: widget.book.dailyPrice,
-      );
+      await widget.onSubmit(_days, widget.book.dailyPrice);
 
       if (mounted) {
         Navigator.of(context).pop();
@@ -337,7 +394,6 @@ class _BorrowRequestDialogState extends State<_BorrowRequestDialog> {
             backgroundColor: Color(0xFF231480),
           ),
         );
-        widget.onSuccess();
       }
     } catch (e) {
       setState(() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:library_project/core/root_screen.dart';
 import 'package:library_project/feature/admin/view/admin_dashboard_screen.dart';
 import 'package:library_project/feature/admin/view/admin_main_screen.dart';
+import 'package:library_project/feature/admin/view/admin_category_books_screen.dart';
 import 'package:library_project/feature/authentication/view/login.dart';
 import 'package:library_project/feature/authentication/view/signup.dart';
 import 'package:library_project/feature/member/view/member_dashboard_screen.dart';
@@ -43,6 +44,19 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) => const AdminMainScreen());
       case MemberMainScreen.routeName:
         return MaterialPageRoute(builder: (_) => const MemberMainScreen());
+      case AdminCategoryBooksScreen.routeName:
+        final args = settings.arguments as Map<String, dynamic>?;
+        if (args != null &&
+            args.containsKey('categoryId') &&
+            args.containsKey('categoryName')) {
+          return MaterialPageRoute(
+            builder: (_) => AdminCategoryBooksScreen(
+              categoryId: args['categoryId'] as int,
+              categoryName: args['categoryName'] as String,
+            ),
+          );
+        }
+        return MaterialPageRoute(builder: (_) => const RootScreen());
       default:
         return MaterialPageRoute(builder: (_) => const RootScreen());
     }

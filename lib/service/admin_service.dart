@@ -360,4 +360,38 @@ class AdminService {
       rethrow;
     }
   }
+
+  static Future<List<Map<String, dynamic>>> fetchBooksByCategory(
+    int categoryId,
+  ) async {
+    try {
+      final response = await _supabase
+          .from('books')
+          .select(
+            'id, title, author, description, daily_price, book_copies(id, status)',
+          )
+          .eq('category_id', categoryId)
+          .order('title', ascending: true);
+
+      return List<Map<String, dynamic>>.from(response).map((book) {
+        final copies = (book['book_copies'] as List?) ?? [];
+        final totalCopies = copies.length;
+        final available = copies
+            .where((c) => c['status'] == 'Available')
+            .length;
+
+        return {
+          'id': book['id'],
+          'title': book['title'],
+          'author': book['author'],
+          'description': book['description'],
+          'daily_price': book['daily_price'],
+          'total_copies': totalCopies,
+          'available_copies': available,
+        };
+      }).toList();
+    } catch (error) {
+      rethrow;
+    }
+  }
 }

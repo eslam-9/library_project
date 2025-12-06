@@ -180,56 +180,70 @@ class _DashboardBody extends StatelessWidget {
           Column(
             children: data.categories
                 .map(
-                  (category) => Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 14.h,
-                    ),
-                    margin: EdgeInsets.only(bottom: 12.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8.r,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.folder_open, color: const Color(0xFF231480)),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                category.name,
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF231480),
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'Created ${_formatDate(category.createdAt)}',
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: const Color(0xFF989898),
-                                ),
-                              ),
-                            ],
+                  (category) => GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        '/adminCategoryBooks',
+                        arguments: {
+                          'categoryId': category.id,
+                          'categoryName': category.name,
+                        },
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 14.h,
+                      ),
+                      margin: EdgeInsets.only(bottom: 12.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8.r,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: Color(0xFF989898),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.folder_open,
+                            color: const Color(0xFF231480),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  category.name,
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF231480),
+                                  ),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  'Created ${_formatDate(category.createdAt)}',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: const Color(0xFF989898),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Color(0xFF989898),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 )
