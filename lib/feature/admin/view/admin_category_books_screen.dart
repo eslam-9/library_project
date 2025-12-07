@@ -7,11 +7,13 @@ import 'package:library_project/feature/admin/viewmodel/admin_category_books_sta
 class AdminCategoryBooksScreen extends ConsumerWidget {
   final int categoryId;
   final String categoryName;
+  final String? categoryDescription;
 
   const AdminCategoryBooksScreen({
     super.key,
     required this.categoryId,
     required this.categoryName,
+    this.categoryDescription,
   });
 
   static const String routeName = '/adminCategoryBooks';
@@ -51,7 +53,26 @@ class AdminCategoryBooksScreen extends ConsumerWidget {
           ],
         ),
       ),
-      body: _buildBody(context, ref, state),
+      body: Column(
+        children: [
+          if (categoryDescription != null && categoryDescription!.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              color: Colors.white.withOpacity(0.7),
+              child: Text(
+                categoryDescription!,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF231480).withOpacity(0.8),
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          Expanded(child: _buildBody(context, ref, state)),
+        ],
+      ),
     );
   }
 

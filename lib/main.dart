@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/core/theming.dart';
 import 'package:library_project/core/root_screen.dart';
 import 'package:library_project/core/app_route.dart';
+import 'package:library_project/service/preferences_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -14,6 +15,7 @@ void main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+  await PreferencesService.init();
   runApp(const MainApp());
 }
 

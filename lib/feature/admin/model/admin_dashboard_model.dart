@@ -16,22 +16,24 @@ class AdminStats {
   });
 
   const AdminStats.empty()
-      : totalMembers = 0,
-        totalBooks = 0,
-        totalCategories = 0,
-        totalCopies = 0,
-        activeBorrowings = 0,
-        availableCopies = 0;
+    : totalMembers = 0,
+      totalBooks = 0,
+      totalCategories = 0,
+      totalCopies = 0,
+      activeBorrowings = 0,
+      availableCopies = 0;
 }
 
 class CategorySummary {
   final int id;
   final String name;
+  final String? description;
   final DateTime createdAt;
 
   const CategorySummary({
     required this.id,
     required this.name,
+    this.description,
     required this.createdAt,
   });
 }
@@ -68,8 +70,7 @@ class AdminDashboardData {
   });
 
   const AdminDashboardData.empty()
-      : stats = const AdminStats.empty(),
-        categories = const [],
-        recentBorrowings = const [];
+    : stats = const AdminStats.empty(),
+      categories = const [],
+      recentBorrowings = const [];
 }
-

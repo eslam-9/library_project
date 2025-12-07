@@ -187,6 +187,7 @@ class _DashboardBody extends StatelessWidget {
                         arguments: {
                           'categoryId': category.id,
                           'categoryName': category.name,
+                          'categoryDescription': category.description,
                         },
                       );
                     },

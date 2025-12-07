@@ -53,6 +53,7 @@ class AppRoute {
             builder: (_) => AdminCategoryBooksScreen(
               categoryId: args['categoryId'] as int,
               categoryName: args['categoryName'] as String,
+              categoryDescription: args['categoryDescription'] as String?,
             ),
           );
         }

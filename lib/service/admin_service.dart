@@ -217,7 +217,7 @@ class AdminService {
   static Future<List<CategorySummary>> _fetchCategories() async {
     final response = await _supabase
         .from('categories')
-        .select('id, name, created_at')
+        .select('id, name, description, created_at')
         .order('created_at', ascending: false)
         .limit(6);
 
@@ -226,6 +226,7 @@ class AdminService {
           (row) => CategorySummary(
             id: row['id'] as int,
             name: (row['name'] as String?) ?? 'Unnamed',
+            description: row['description'] as String?,
             createdAt: _parseDate(row['created_at']) ?? DateTime.now(),
           ),
         )

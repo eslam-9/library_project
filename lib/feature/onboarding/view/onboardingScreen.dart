@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/feature/authentication/view/login.dart';
 import 'package:library_project/feature/onboarding/model/onboarding_model.dart';
 import 'package:library_project/feature/onboarding/view/onboarding_widget.dart';
+import 'package:library_project/feature/onboarding/viewmodel/onboarding_notifier.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
   static const String routeName = '/onboarding';
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
@@ -54,9 +56,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _handleNextButton() {
+  void _handleNextButton() async {
     if (_controller.page == pages.length - 1) {
-      Navigator.pushNamed(context, Login.routeName);
+      // Mark onboarding as completed
+      await ref.read(onboardingNotifierProvider.notifier).completeOnboarding();
+
+      // Navigate to login
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, Login.routeName);
+      }
     } else {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),
