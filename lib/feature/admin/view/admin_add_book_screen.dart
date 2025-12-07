@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:library_project/feature/admin/view/widgets/admin_add_book_body.dart';
 import 'package:library_project/service/admin_service.dart';
 
 class AdminAddBookScreen extends StatefulWidget {
@@ -176,201 +177,22 @@ class _AdminAddBookScreenState extends State<AdminAddBookScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Book Details',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF231480),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: 'Title',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _authorController,
-                decoration: InputDecoration(
-                  labelText: 'Author',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _descriptionController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              _isLoadingCategories
-                  ? Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 14.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            height: 20.h,
-                            width: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFF231480),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          const Text('Loading categories...'),
-                        ],
-                      ),
-                    )
-                  : DropdownButtonFormField<int>(
-                      value: _selectedCategoryId,
-                      decoration: InputDecoration(
-                        labelText: 'Category',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14.r),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 14.h,
-                        ),
-                      ),
-                      items: _categories.map((category) {
-                        return DropdownMenuItem<int>(
-                          value: category['id'] as int,
-                          child: Text(category['name'] as String),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCategoryId = value;
-                        });
-                      },
-                    ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _priceController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Daily Price (per day)',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _copiesController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Number of copies',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 14.h,
-                  ),
-                ),
-              ),
-              SizedBox(height: 32.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF231480),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
-                  child: _isSubmitting
-                      ? SizedBox(
-                          height: 20.h,
-                          width: 20.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          'Add Book',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      body: AdminAddBookBody(
+        titleController: _titleController,
+        authorController: _authorController,
+        descriptionController: _descriptionController,
+        copiesController: _copiesController,
+        priceController: _priceController,
+        categories: _categories,
+        selectedCategoryId: _selectedCategoryId,
+        isLoadingCategories: _isLoadingCategories,
+        isSubmitting: _isSubmitting,
+        onCategoryChanged: (value) {
+          setState(() {
+            _selectedCategoryId = value;
+          });
+        },
+        onSubmit: _handleSubmit,
       ),
     );
   }

@@ -4,6 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:library_project/feature/member/model/member_books_model.dart';
 import 'package:library_project/feature/member/viewmodel/member_dashboard_notifier.dart';
 import 'package:library_project/service/member_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:library_project/feature/member/model/available_book_model.dart';
+import 'package:library_project/feature/member/view/widgets/borrow_request_dialog.dart';
 
 final memberBooksProvider = FutureProvider<List<MemberBook>>((ref) async {
   return MemberService.fetchAllBooks();
@@ -67,14 +70,14 @@ class MemberBooksScreen extends ConsumerWidget {
   }
 }
 
-class _BookTile extends StatelessWidget {
+class _BookTile extends ConsumerWidget {
   final MemberBook book;
   final WidgetRef ref;
 
   const _BookTile({required this.book, required this.ref});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final available = book.availableCopies;
 
     return Container(
@@ -145,34 +148,7 @@ class _BookTile extends StatelessWidget {
             child: ElevatedButton(
               onPressed: available == 0
                   ? null
-                  : () async {
-                      try {
-                        await MemberService.borrowBook(book.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Book borrowed successfully'),
-                              backgroundColor: Color(0xFF231480),
-                            ),
-                          );
-                        }
-                        ref.invalidate(memberBooksProvider);
-                        await ref
-                            .read(memberDashboardProvider.notifier)
-                            .refreshDashboard();
-                      } catch (_) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Failed to borrow book. Please try again.',
-                              ),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
+                  : () => _showBorrowDialog(context, ref, book),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF231480),
                 foregroundColor: Colors.white,
@@ -190,6 +166,93 @@ class _BookTile extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showBorrowDialog(
+    BuildContext context,
+    WidgetRef ref,
+    MemberBook book,
+  ) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('User not authenticated')));
+      return;
+    }
+
+    // Convert MemberBook to AvailableBook for the dialog
+    // Assuming you can map or create a similar object, or update Dialog to generic.
+    // For now, I'll map it manually to avoid changing Dialog signature significantly if it expects AvailableBook.
+    // Actually, let's check BorrowRequestDialog signature. I will assume I need to import it.
+
+    // Using a simpler approach: check for duplicate then show dialog.
+    // Since I cannot easily use `checkIfAlreadyBorrowed` from MemberService without memberId, checking auth first.
+
+    try {
+      final memberId = await MemberService.getMemberIdByProfileId(user.id);
+      if (memberId == null) throw Exception('Member not found');
+
+      final alreadyBorrowed = await MemberService.checkIfAlreadyBorrowed(
+        memberId,
+        book.id,
+      );
+      if (alreadyBorrowed) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'You already have a pending or active borrowing for this book',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      if (context.mounted) {
+        // Need to construct an AvailableBook or modify Dialog to accept MemberBook?
+        // Checking BorrowRequestDialog definition...
+        // It expects AvailableBook.
+        // I should construct an AvailableBook from MemberBook.
+
+        final availableBook = AvailableBook(
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          description: book.description,
+          categoryName:
+              null, // Model doesn't have it, irrelevant for dialog display usually?
+          dailyPrice: book.dailyPrice,
+          availableCopies: book.availableCopies,
+        );
+
+        await showDialog(
+          context: context,
+          builder: (context) => BorrowRequestDialog(
+            book: availableBook,
+            onSubmit: (days, dailyPrice) async {
+              await MemberService.requestBorrowing(
+                memberId: memberId,
+                bookId: book.id,
+                days: days,
+                dailyPrice: dailyPrice,
+              );
+              // Refresh logic
+              ref.invalidate(memberBooksProvider);
+              ref.read(memberDashboardProvider.notifier).refreshDashboard();
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }
 

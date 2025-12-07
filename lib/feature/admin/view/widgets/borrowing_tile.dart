@@ -12,14 +12,12 @@ class BorrowingTile extends StatelessWidget {
     final statusColor = record.returnedAt != null
         ? const Color(0xFF30C48D)
         : (record.dueAt != null &&
-                record.dueAt!.isBefore(DateTime.now()) &&
-                record.returnedAt == null)
-            ? const Color(0xFFFF6B6B)
-            : const Color(0xFFFFB347);
+              record.dueAt!.isBefore(DateTime.now()) &&
+              record.returnedAt == null)
+        ? const Color(0xFFFF6B6B)
+        : const Color(0xFFFFB347);
 
-    final statusLabel = record.returnedAt != null
-        ? 'Returned'
-        : record.copyStatus;
+    final statusLabel = record.status;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -70,18 +68,14 @@ class BorrowingTile extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             record.memberLabel,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF989898),
-            ),
+            style: TextStyle(fontSize: 14.sp, color: const Color(0xFF989898)),
           ),
           SizedBox(height: 12.h),
           Row(
             children: [
               _InfoChip(
                 icon: Icons.calendar_month_outlined,
-                label:
-                    'Borrowed ${_formatDate(record.borrowedAt)}',
+                label: 'Borrowed ${_formatDate(record.borrowedAt)}',
               ),
               SizedBox(width: 12.w),
               if (record.dueAt != null)
@@ -133,4 +127,3 @@ class _InfoChip extends StatelessWidget {
     );
   }
 }
-

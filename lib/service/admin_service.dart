@@ -236,7 +236,9 @@ class AdminService {
   static Future<List<BorrowingRecord>> _fetchRecentBorrowings() async {
     final borrowingRows = await _supabase
         .from('borrowing')
-        .select('id, member_id, copy_id, borrowed_at, due_at, returned_at')
+        .select(
+          'id, member_id, copy_id, borrowed_at, due_at, returned_at, status',
+        )
         .order('borrowed_at', ascending: false)
         .limit(6);
 
@@ -274,7 +276,7 @@ class AdminService {
       final memberEmail =
           members[memberId]?['email'] as String? ?? 'Member #$memberId';
       final copy = copies[copyId];
-      final status = copy?['status'] as String? ?? 'Unknown';
+      final status = row['status'] as String? ?? 'Unknown';
       final bookId = copy?['book_id'] as int?;
       final bookTitle =
           books[bookId]?['title'] as String? ?? 'Book #${bookId ?? '-'}';
@@ -283,7 +285,7 @@ class AdminService {
         id: row['id'] as int,
         memberLabel: memberEmail,
         bookTitle: bookTitle,
-        copyStatus: status,
+        status: status,
         borrowedAt: _parseDate(row['borrowed_at']) ?? DateTime.now(),
         dueAt: _parseDate(row['due_at']),
         returnedAt: _parseDate(row['returned_at']),

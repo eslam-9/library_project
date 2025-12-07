@@ -4,6 +4,7 @@ class MemberBook {
   final String? author;
   final String? description;
   final int availableCopies;
+  final double dailyPrice;
 
   const MemberBook({
     required this.id,
@@ -11,5 +12,6 @@ class MemberBook {
     this.author,
     this.description,
     required this.availableCopies,
+    required this.dailyPrice,
   });
 }

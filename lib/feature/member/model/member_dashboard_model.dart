@@ -18,7 +18,7 @@ class MemberStats {
 class MemberBorrowingRecord {
   final int id;
   final String bookTitle;
-  final String copyStatus;
+  final String status;
   final DateTime borrowedAt;
   final DateTime? dueAt;
   final DateTime? returnedAt;
@@ -26,7 +26,7 @@ class MemberBorrowingRecord {
   const MemberBorrowingRecord({
     required this.id,
     required this.bookTitle,
-    required this.copyStatus,
+    required this.status,
     required this.borrowedAt,
     this.dueAt,
     this.returnedAt,

@@ -42,7 +42,7 @@ class BorrowingRecord {
   final int id;
   final String memberLabel;
   final String bookTitle;
-  final String copyStatus;
+  final String status;
   final DateTime borrowedAt;
   final DateTime? dueAt;
   final DateTime? returnedAt;
@@ -51,7 +51,7 @@ class BorrowingRecord {
     required this.id,
     required this.memberLabel,
     required this.bookTitle,
-    required this.copyStatus,
+    required this.status,
     required this.borrowedAt,
     this.dueAt,
     this.returnedAt,

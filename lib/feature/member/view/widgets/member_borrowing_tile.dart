@@ -17,9 +17,7 @@ class MemberBorrowingTile extends StatelessWidget {
         ? const Color(0xFFFF6B6B)
         : const Color(0xFFFFB347);
 
-    final statusLabel = record.returnedAt != null
-        ? 'Returned'
-        : record.copyStatus;
+    final statusLabel = record.status;
 
     return Container(
       padding: EdgeInsets.all(16.w),

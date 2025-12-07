@@ -74,7 +74,7 @@ class MemberService {
   ) async {
     final borrowingRows = await _supabase
         .from('borrowing')
-        .select('id, copy_id, borrowed_at, due_at, returned_at')
+        .select('id, copy_id, borrowed_at, due_at, returned_at, status')
         .eq('member_id', memberId)
         .order('borrowed_at', ascending: false)
         .limit(6);
@@ -102,7 +102,7 @@ class MemberService {
     return borrowingRows.map((row) {
       final copyId = row['copy_id'] as int?;
       final copy = copies[copyId];
-      final status = copy?['status'] as String? ?? 'Unknown';
+      final status = row['status'] as String? ?? 'Unknown';
       final bookId = copy?['book_id'] as int?;
       final bookTitle =
           books[bookId]?['title'] as String? ?? 'Book #${bookId ?? '-'}';
@@ -110,7 +110,7 @@ class MemberService {
       return MemberBorrowingRecord(
         id: row['id'] as int,
         bookTitle: bookTitle,
-        copyStatus: status,
+        status: status,
         borrowedAt: _parseDate(row['borrowed_at']) ?? DateTime.now(),
         dueAt: _parseDate(row['due_at']),
         returnedAt: _parseDate(row['returned_at']),
@@ -174,7 +174,7 @@ class MemberService {
   static Future<List<MemberBook>> fetchAllBooks() async {
     final booksRows = await _supabase
         .from('books')
-        .select('id, title, author, description');
+        .select('id, title, author, description, daily_price');
 
     if (booksRows.isEmpty) {
       return [];
@@ -206,6 +206,7 @@ class MemberService {
       final author = row['author'] as String?;
       final description = row['description'] as String?;
       final available = availableCounts[id] ?? 0;
+      final dailyPrice = (row['daily_price'] as num?)?.toDouble() ?? 0.0;
 
       return MemberBook(
         id: id,
@@ -213,42 +214,9 @@ class MemberService {
         author: author,
         description: description,
         availableCopies: available,
+        dailyPrice: dailyPrice,
       );
     }).toList();
-  }
-
-  static Future<void> borrowBook(int bookId) async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) {
-      throw AuthException('User not authenticated');
-    }
-
-    final memberRow = await _getOrCreateMember(user);
-    final memberId = memberRow['id'] as int;
-
-    final copyRow = await _supabase
-        .from('book_copies')
-        .select('id')
-        .eq('book_id', bookId)
-        .eq('status', 'Available')
-        .limit(1)
-        .maybeSingle();
-
-    if (copyRow == null) {
-      throw Exception('No available copies for this book');
-    }
-
-    final copyId = copyRow['id'] as int;
-
-    final dueAt = DateTime.now()
-        .add(const Duration(days: 14))
-        .toIso8601String();
-
-    await _supabase.from('borrowing').insert({
-      'copy_id': copyId,
-      'member_id': memberId,
-      'due_at': dueAt,
-    });
   }
 
   static Future<List<AvailableBook>> fetchAvailableBooks() async {
